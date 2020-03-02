@@ -1,12 +1,13 @@
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 
-async function obtenerInfo(url2, page, usuario) {
+async function obtenerInfo(url2, page) {
   await page.goto(url2, {
     waitUntil: 'networkidle2',
     timeout: 3000000
   });
 
+  //hace scroll en la pagina para cargar mas posts en el feed
   await page.evaluate(() => window.scrollBy(0, 2500));
   await page.waitFor(3000);
   await page.evaluate(() => window.scrollBy(0, 2500));
@@ -20,6 +21,7 @@ async function obtenerInfo(url2, page, usuario) {
   await page.evaluate(() => window.scrollBy(0, 2500));
   await page.waitFor(3000);
 
+  //obtiene la foto de perfil ya sea de una pagina o usuario normal
   let fotoPerfil = await page.evaluate(() => {
     let selector1 = document.querySelector('._1nv3 img');
     let selector2 = document.querySelector('._6tay img');
@@ -30,25 +32,31 @@ async function obtenerInfo(url2, page, usuario) {
     return selector1 ? selector1 : selector2;
   });
 
+  //obtiene el nombre de usuario del perfil o la pagina
+  let nombreUsuario = await page.evaluate(() => {
+    let selector1 = document.querySelector('._64-f');
+    let selector2 = document.querySelector('._2nlw._2nlv');
+
+    selector1 ? (selector1 = selector1.textContent) : null;
+    selector2 ? (selector2 = selector2.textContent) : null;
+
+    return selector1 ? selector1 : selector2;
+  });
+
+  //seleccion de datos
   const data = await page.evaluate(() => {
+    //selecciona todos los posts y los pone en un array
     const noticias = Array.from(
       document.querySelectorAll('div._1dwg._1w_m._q7o')
     );
 
     const datos = [];
 
+    //por cada post en el array extrae la fecha de publicacion,
+    // la info del post y la foto. Luego los mete en un array llamado datos
     noticias.forEach(noticia => {
       let noti = {};
-      let tiempo = noticia.querySelector(
-        'div:nth-child(2) > div> div > div >div >div >div > div > div._5pcp._5lel._2jyu._232_'
-      );
-
-      tiempo
-        ? (tiempo = tiempo.innerText
-            .split(' ')
-            .slice(0, 2)
-            .join(' '))
-        : null;
+      let timestamp = noticia.querySelector('.timestampContent').textContent;
 
       let titulo = noticia.querySelector(
         'div:nth-child(2) > div._5pbx.userContent._3576'
@@ -62,10 +70,9 @@ async function obtenerInfo(url2, page, usuario) {
         : null;
 
       let imagen = noticia.querySelector('div:nth-child(2) > div._3x-2 img');
-
       imagen ? (imagen = imagen.getAttribute('src')) : null;
 
-      noti.tiempo = tiempo;
+      noti.timestamp = timestamp;
       noti.titulo = titulo;
       noti.imagen = imagen;
       datos.push(noti);
@@ -74,10 +81,12 @@ async function obtenerInfo(url2, page, usuario) {
     return datos;
   });
 
+  //al array data creado previamente se le hace un map y por cada elemento se
+  //agrega el nombre de usuario y la foto del perfil
   const nuevaData = data.map(e => {
     let obj = {
       ...e,
-      periodista: usuario,
+      fuente: nombreUsuario,
       link: url2,
       fotoUsuario: fotoPerfil
     };
@@ -87,7 +96,7 @@ async function obtenerInfo(url2, page, usuario) {
   return nuevaData;
 }
 
-async function runScrape() {
+async function runScrape(perfiles) {
   const browser = await puppeteer.launch();
 
   const page = await browser.newPage();
@@ -104,31 +113,16 @@ async function runScrape() {
   await page.waitForNavigation();
 
   //Obtener publicaciones de la pagina deseada
-  const marcio = await obtenerInfo(
-    'https://www.facebook.com/marcio.silva.1272',
-    page,
-    'Marcio Silva'
-  );
-  const sentinela = await obtenerInfo(
-    'https://www.facebook.com/sentinela24h/posts',
-    page,
-    'Sentinela 24H'
-  );
-  const plateia = await obtenerInfo(
-    'https://www.facebook.com/aplateia/posts',
-    page,
-    'Jornal A Plateia'
-  );
-  const riveraMiCiudad = await obtenerInfo(
-    'https://www.facebook.com/pg/RiveraCiudad/posts/',
-    page,
-    'Jornal A Plateia'
-  );
 
-  fs.writeFileSync(
-    'noticias.json',
-    JSON.stringify([...marcio, ...sentinela, ...plateia, ...riveraMiCiudad])
-  );
+  let noticias = [];
+
+  for (let i = 0; i < perfiles.length; i++) {
+    const perfil = perfiles[i];
+    const noticiasPerfil = await obtenerInfo(perfil, page);
+    noticias = [...noticias, ...noticiasPerfil];
+  }
+
+  fs.writeFileSync('noticias.json', JSON.stringify(noticias));
 
   browser.close();
 }
