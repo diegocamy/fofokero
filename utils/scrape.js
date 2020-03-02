@@ -6,6 +6,7 @@ async function obtenerInfo(url2, page, usuario) {
     waitUntil: 'networkidle2',
     timeout: 3000000
   });
+
   await page.evaluate(() => window.scrollBy(0, 2500));
   await page.waitFor(3000);
   await page.evaluate(() => window.scrollBy(0, 2500));
@@ -18,6 +19,16 @@ async function obtenerInfo(url2, page, usuario) {
   await page.waitFor(3000);
   await page.evaluate(() => window.scrollBy(0, 2500));
   await page.waitFor(3000);
+
+  let fotoPerfil = await page.evaluate(() => {
+    let selector1 = document.querySelector('._1nv3 img');
+    let selector2 = document.querySelector('._6tay img');
+
+    selector1 ? (selector1 = selector1.getAttribute('src')) : null;
+    selector2 ? (selector2 = selector2.getAttribute('src')) : null;
+
+    return selector1 ? selector1 : selector2;
+  });
 
   const data = await page.evaluate(() => {
     const noticias = Array.from(
@@ -28,7 +39,6 @@ async function obtenerInfo(url2, page, usuario) {
 
     noticias.forEach(noticia => {
       let noti = {};
-      let imagen;
       let tiempo = noticia.querySelector(
         'div:nth-child(2) > div> div > div >div >div >div > div > div._5pcp._5lel._2jyu._232_'
       );
@@ -51,31 +61,9 @@ async function obtenerInfo(url2, page, usuario) {
             .trim())
         : null;
 
-      if (noticia.innerHTML.includes('_2a2q _65sr')) {
-        imagen = noticia.querySelector(
-          'div:nth-child(2) > div._3x-2 > div > div > div > a img'
-        );
-        imagen ? (imagen = imagen.getAttribute('src')) : null;
-      } else if (noticia.innerHTML.includes('_6ks')) {
-        imagen = noticia.querySelector(
-          'div:nth-child(2) > div._3x-2 > div > div > div > div > div.lfloat._ohe > span > div > div > a > div > div > img'
-        );
-        imagen ? (imagen = imagen.getAttribute('src')) : null;
-      } else if (noticia.innerHTML.includes('lfloat _ohe')) {
-        imagen = noticia.querySelector(
-          'div:nth-child(2) > div._3x-2 > div > div > div > div > div.lfloat._ohe > span > div > img'
-        );
-        imagen ? (imagen = imagen.getAttribute('src')) : null;
-      } else if (noticia.innerHTML.includes('_4-eo _2t9n _50z9')) {
-        imagen = noticia.querySelector('div:nth-child(2) > div._3x-2 img');
-        imagen ? (imagen = imagen.getAttribute('src')) : null;
-      } else if (noticia.innerHTML.includes('_5cq3 _1ktf')) {
-        imagen = noticia.querySelector('div:nth-child(2) > div._3x-2 img');
-        imagen ? (imagen = imagen.getAttribute('src')) : null;
-      } else if (noticia.innerHTML.includes('_1ktf')) {
-        imagen = noticia.querySelector('div:nth-child(2) > div._3x-2 img');
-        imagen ? (imagen = imagen.getAttribute('src')) : null;
-      }
+      let imagen = noticia.querySelector('div:nth-child(2) > div._3x-2 img');
+
+      imagen ? (imagen = imagen.getAttribute('src')) : null;
 
       noti.tiempo = tiempo;
       noti.titulo = titulo;
@@ -87,14 +75,19 @@ async function obtenerInfo(url2, page, usuario) {
   });
 
   const nuevaData = data.map(e => {
-    let obj = { ...e, periodista: usuario, link: url2 };
+    let obj = {
+      ...e,
+      periodista: usuario,
+      link: url2,
+      fotoUsuario: fotoPerfil
+    };
     return obj;
   });
 
   return nuevaData;
 }
 
-export default async function runScrape() {
+async function runScrape() {
   const browser = await puppeteer.launch();
 
   const page = await browser.newPage();
@@ -132,7 +125,12 @@ export default async function runScrape() {
     'Jornal A Plateia'
   );
 
-  browser.close();
+  fs.writeFileSync(
+    'noticias.json',
+    JSON.stringify([...marcio, ...sentinela, ...plateia, ...riveraMiCiudad])
+  );
 
-  return [...marcio, ...sentinela, ...plateia, ...riveraMiCiudad];
+  browser.close();
 }
+
+module.exports = runScrape;
