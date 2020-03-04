@@ -4,14 +4,23 @@ require('dotenv').config();
 
 const scraper = require('./utils/scrape');
 
-const fs = require('fs');
+const app = express();
 
-const perfiles = [
-  'https://www.facebook.com/marcio.silva.1272',
-  'https://www.facebook.com/sentinela24h/posts',
-  'https://www.facebook.com/aplateia/posts'
-];
+//MIDDLEWARES
+app.use(express.json());
+app.use(cors({ origin: 'localhost' }));
 
-scraper(perfiles).then(res => {
-  fs.writeFileSync('noticias.json', JSON.stringify(res));
+//RUTA PARA OBTENER LAS FOFOCAS
+app.get('/fofocas', async (req, res) => {
+  try {
+    const perfiles = req.body.perfiles.split(',');
+    const fofocas = await scraper(perfiles);
+    res.status(200).json(fofocas);
+  } catch (error) {
+    res.status(400).json(error);
+  }
 });
+
+const port = process.env.PORT;
+
+app.listen(port || 5000, () => console.log('Server listening on port 5000'));

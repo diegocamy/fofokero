@@ -12,8 +12,6 @@ async function obtenerInfo(url, page) {
   await page.waitFor(1500);
   await page.evaluate(() => window.scrollBy(0, 5000));
   await page.waitFor(1500);
-  await page.evaluate(() => window.scrollBy(0, 5000));
-  await page.waitFor(1500);
 
   //obtiene la foto de perfil ya sea de una pagina o usuario normal
   let fotoPerfil = await page.evaluate(() => {
