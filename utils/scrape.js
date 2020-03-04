@@ -1,25 +1,19 @@
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 
-async function obtenerInfo(url2, page) {
-  await page.goto(url2, {
+async function obtenerInfo(url, page) {
+  await page.goto(url, {
     waitUntil: 'networkidle2',
     timeout: 3000000
   });
 
   //hace scroll en la pagina para cargar mas posts en el feed
-  await page.evaluate(() => window.scrollBy(0, 2500));
-  await page.waitFor(3000);
-  await page.evaluate(() => window.scrollBy(0, 2500));
-  await page.waitFor(3000);
-  await page.evaluate(() => window.scrollBy(0, 2500));
-  await page.waitFor(3000);
-  await page.evaluate(() => window.scrollBy(0, 2500));
-  await page.waitFor(3000);
-  await page.evaluate(() => window.scrollBy(0, 2500));
-  await page.waitFor(3000);
-  await page.evaluate(() => window.scrollBy(0, 2500));
-  await page.waitFor(3000);
+  await page.evaluate(() => window.scrollBy(0, 5000));
+  await page.waitFor(1500);
+  await page.evaluate(() => window.scrollBy(0, 5000));
+  await page.waitFor(1500);
+  await page.evaluate(() => window.scrollBy(0, 5000));
+  await page.waitFor(1500);
 
   //obtiene la foto de perfil ya sea de una pagina o usuario normal
   let fotoPerfil = await page.evaluate(() => {
@@ -50,18 +44,21 @@ async function obtenerInfo(url2, page) {
       document.querySelectorAll('div._1dwg._1w_m._q7o')
     );
 
+    console.log(noticias);
+
     const datos = [];
 
     //por cada post en el array extrae la fecha de publicacion,
-    // la info del post y la foto. Luego los mete en un array llamado datos
+    // la info del post, el enlace directo y la foto. Luego los mete en un array llamado datos
     noticias.forEach(noticia => {
       let noti = {};
-      let timestamp = noticia.querySelector('.timestampContent').textContent;
+
+      let timestamp = noticia.querySelector('.timestampContent');
+      timestamp ? (timestamp = timestamp.textContent) : null;
 
       let titulo = noticia.querySelector(
         'div:nth-child(2) > div._5pbx.userContent._3576'
       );
-
       titulo
         ? (titulo = titulo.innerText
             .replace('Ver traducción', '')
@@ -72,9 +69,15 @@ async function obtenerInfo(url2, page) {
       let imagen = noticia.querySelector('div:nth-child(2) > div._3x-2 img');
       imagen ? (imagen = imagen.getAttribute('src')) : null;
 
+      let enlace = noticia.querySelectorAll('a')[
+        noticia.querySelectorAll('a').length - 1
+      ];
+      enlace ? (enlace = enlace.getAttribute('href')) : null;
+
       noti.timestamp = timestamp;
       noti.titulo = titulo;
       noti.imagen = imagen;
+      noti.enlace = enlace;
       datos.push(noti);
     });
 
@@ -87,7 +90,7 @@ async function obtenerInfo(url2, page) {
     let obj = {
       ...e,
       fuente: nombreUsuario,
-      link: url2,
+      link: url,
       fotoUsuario: fotoPerfil
     };
     return obj;
@@ -106,14 +109,14 @@ async function runScrape(perfiles) {
   const [correo] = await page.$x('//*[@id="email"]');
   const [password] = await page.$x('//*[@id="pass"]');
 
-  await correo.type('diegocamy23@gmail.com');
-  await password.type('fofokerofofokero2020');
+  await correo.type(process.env.FACE_USER);
+  await password.type(process.env.FACE_PASS);
 
   await page.keyboard.press('Enter');
+
   await page.waitForNavigation();
 
-  //Obtener publicaciones de la pagina deseada
-
+  //Obtener publicaciones de las paginas deseadas
   let noticias = [];
 
   for (let i = 0; i < perfiles.length; i++) {
@@ -122,9 +125,9 @@ async function runScrape(perfiles) {
     noticias = [...noticias, ...noticiasPerfil];
   }
 
-  fs.writeFileSync('noticias.json', JSON.stringify(noticias));
-
   browser.close();
+
+  return noticias;
 }
 
 module.exports = runScrape;
