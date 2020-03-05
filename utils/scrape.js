@@ -72,7 +72,12 @@ async function obtenerInfo(url, page) {
       ];
       enlace ? (enlace = enlace.getAttribute('href')) : null;
 
-      noti.timestamp = timestamp;
+      //verificar si el enlace comienza con facebook.com, sino, corregirlo
+      !enlace.contains('facebook.com')
+        ? (enlace = 'http://facebook.com' + enlace)
+        : enlace;
+
+      noti.timeStamp = timestamp;
       noti.titulo = titulo;
       noti.imagen = imagen;
       noti.enlace = enlace;
@@ -88,7 +93,7 @@ async function obtenerInfo(url, page) {
     let obj = {
       ...e,
       fuente: nombreUsuario,
-      link: url,
+      linkPerfil: url,
       fotoUsuario: fotoPerfil
     };
     return obj;
@@ -98,34 +103,38 @@ async function obtenerInfo(url, page) {
 }
 
 async function runScrape(perfiles) {
-  const browser = await puppeteer.launch();
+  try {
+    const browser = await puppeteer.launch();
 
-  const page = await browser.newPage();
-  await page.goto('http://facebook.com');
+    const page = await browser.newPage();
+    await page.goto('http://facebook.com');
 
-  //LOGIN
-  const [correo] = await page.$x('//*[@id="email"]');
-  const [password] = await page.$x('//*[@id="pass"]');
+    //LOGIN
+    const [correo] = await page.$x('//*[@id="email"]');
+    const [password] = await page.$x('//*[@id="pass"]');
 
-  await correo.type(process.env.FACE_USER);
-  await password.type(process.env.FACE_PASS);
+    await correo.type(process.env.FACE_USER);
+    await password.type(process.env.FACE_PASS);
 
-  await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter');
 
-  await page.waitForNavigation();
+    await page.waitForNavigation();
 
-  //Obtener publicaciones de las paginas deseadas
-  let noticias = [];
+    //Obtener publicaciones de las paginas deseadas
+    let noticias = [];
 
-  for (let i = 0; i < perfiles.length; i++) {
-    const perfil = perfiles[i];
-    const noticiasPerfil = await obtenerInfo(perfil, page);
-    noticias = [...noticias, ...noticiasPerfil];
+    for (let i = 0; i < perfiles.length; i++) {
+      const perfil = perfiles[i];
+      const noticiasPerfil = await obtenerInfo(perfil, page);
+      noticias = [...noticias, ...noticiasPerfil];
+    }
+
+    browser.close();
+
+    return noticias;
+  } catch (error) {
+    return error;
   }
-
-  browser.close();
-
-  return noticias;
 }
 
 module.exports = runScrape;
