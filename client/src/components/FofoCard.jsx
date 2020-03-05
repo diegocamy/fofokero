@@ -8,6 +8,7 @@ const FofoCard = ({ fofoca }) => {
     timeStamp,
     titulo,
     fuente,
+    titular,
     enlace
   } = fofoca;
 
@@ -24,9 +25,9 @@ const FofoCard = ({ fofoca }) => {
           <a href={linkPerfil}>{fuente}</a>
         </p>
         <p className='card-subtitle mb-2 text-muted'>🕓 {timeStamp}</p>
-        <p className='card-text'>{titulo}</p>
+        <p className='card-text'>{titular ? titular : titulo}</p>
         <a href={enlace} className='btn btn-primary btn-dark'>
-          Ver 👀
+          Fofoquear 👀
         </a>
       </div>
     </div>

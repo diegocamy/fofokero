@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Spinner from './Spinner';
 import axios from 'axios';
 import FofoCard from './FofoCard';
@@ -9,12 +9,28 @@ const Fofokas = () => {
   const [fofocas, setFofocas] = useState(null);
   const [cargando, setCargando] = useState(false);
 
+  useEffect(() => {
+    //obtener ultimas noticias guardadas
+    const fofocasGuardadas = JSON.parse(localStorage.getItem('ultimasFofocas'));
+    if (fofocasGuardadas) {
+      //verificar si pasaron menos de 5 minutos, si es asi, mostrar esas mismas noticias sin
+      //volver a cargar otras
+      const horaActual = new Date().getTime();
+      if (horaActual - fofocasGuardadas.hora < 600000) {
+        setFofocas(fofocasGuardadas.fofocas);
+      } else {
+        fetchFofocas();
+      }
+    }
+  }, []);
+
   const fetchFofocas = async e => {
     try {
       setCargando(true);
       const respuesta = await axios.get('http://localhost:5000/fofocas', {
         params: {
-          perfiles: 'http://facebook.com/aplateia/posts'
+          perfiles:
+            'http://facebook.com/aplateia/posts,http://facebook.com/sentinela24h/posts,http://www.facebook.com/RiveraCiudad/posts'
         }
       });
       setFofocas(respuesta.data);
@@ -25,6 +41,12 @@ const Fofokas = () => {
   };
 
   const mostrarFofocas = fofocas => {
+    //guardar en localStore las fofocas
+    let ultimasFofocas = {};
+    ultimasFofocas.hora = new Date().getTime();
+    ultimasFofocas.fofocas = fofocas;
+    localStorage.setItem('ultimasFofocas', JSON.stringify(ultimasFofocas));
+
     return fofocas.map((f, index) => {
       if (f.titulo && f.imagen) {
         return <FofoCard key={index} fofoca={f} />;
@@ -37,7 +59,6 @@ const Fofokas = () => {
   }
 
   if (!cargando && fofocas) {
-    console.log(fofocas);
     return (
       <div className='m-2'>
         <div className='text-center m-4'>

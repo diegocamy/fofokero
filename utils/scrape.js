@@ -77,9 +77,22 @@ async function obtenerInfo(url, page) {
         ? (enlace = 'http://facebook.com' + enlace)
         : enlace;
 
+      let titular;
+
+      noticia
+        .querySelectorAll('a')
+        [noticia.querySelectorAll('a').length - 1].getAttribute('aria-label')
+        ? (titular = noticia
+            .querySelectorAll('a')
+            [noticia.querySelectorAll('a').length - 1].getAttribute(
+              'aria-label'
+            ))
+        : null;
+
       noti.timeStamp = timestamp;
       noti.titulo = titulo;
       noti.imagen = imagen;
+      noti.titular = titular;
       noti.enlace = enlace;
       datos.push(noti);
     });

@@ -5,7 +5,7 @@ const Navbar = () => {
     <div>
       <nav className='navbar navbar-dark bg-dark'>
         <a className='navbar-brand' href='#'>
-          Fofokero
+          Fofokero 👀
         </a>
         <ul className='navbar-nav'>
           <li className='nav-item'>
