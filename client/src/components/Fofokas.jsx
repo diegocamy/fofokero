@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Spinner from './Spinner';
 import axios from 'axios';
 import FofoCard from './FofoCard';
 
@@ -7,34 +6,44 @@ import './Fofokas.css';
 
 const Fofokas = () => {
   const [fofocas, setFofocas] = useState(null);
-  const [cargando, setCargando] = useState(false);
+  const [mensaje, setMensaje] = useState(null);
 
   useEffect(() => {
     //obtener ultimas noticias guardadas
     const fofocasGuardadas = JSON.parse(localStorage.getItem('ultimasFofocas'));
     if (fofocasGuardadas) {
-      //verificar si pasaron menos de 5 minutos, si es asi, mostrar esas mismas noticias sin
+      //verificar si pasaron menos de 5 minutos desde el ultimo ingreso a la app
+      //si es asi, mostrar esas mismas noticias sin
       //volver a cargar otras
       const horaActual = new Date().getTime();
-      if (horaActual - fofocasGuardadas.hora < 600000) {
+      if (horaActual - fofocasGuardadas.hora < 300000) {
         setFofocas(fofocasGuardadas.fofocas);
       } else {
-        fetchFofocas();
+        //si pasaron 5 minutos entonces cargar nuevas fofocas
+        (async () => {
+          setFofocas(fofocasGuardadas.fofocas);
+          await fetchFofocas();
+        })();
       }
+    } else {
+      //si no habian fofocas guardadas, cargar inmediatamente unas fofoquita
+      (async () => {
+        await fetchFofocas();
+      })();
     }
   }, []);
 
+  //cargar nuevas fofocas a cada 5 min
+  setInterval(async () => {
+    await fetchFofocas();
+  }, 300000);
+
   const fetchFofocas = async e => {
     try {
-      setCargando(true);
-      const respuesta = await axios.get('http://localhost:5000/fofocas', {
-        params: {
-          perfiles:
-            'http://facebook.com/aplateia/posts,http://facebook.com/sentinela24h/posts,http://www.facebook.com/RiveraCiudad/posts'
-        }
-      });
+      setMensaje('Cargando nuevas fofocas...');
+      const respuesta = await axios.get('http://localhost:5000/fofocas');
       setFofocas(respuesta.data);
-      setCargando(false);
+      setMensaje(null);
     } catch (error) {
       console.log(error);
     }
@@ -42,6 +51,7 @@ const Fofokas = () => {
 
   const mostrarFofocas = fofocas => {
     //guardar en localStore las fofocas
+    fofocas.sort(() => Math.random() - 0.5); //pseudo-random sort en las fofocas
     let ultimasFofocas = {};
     ultimasFofocas.hora = new Date().getTime();
     ultimasFofocas.fofocas = fofocas;
@@ -50,35 +60,26 @@ const Fofokas = () => {
     return fofocas.map((f, index) => {
       if (f.titulo && f.imagen) {
         return <FofoCard key={index} fofoca={f} />;
+      } else {
+        return null;
       }
     });
   };
 
-  if (cargando && !fofocas) {
-    return <Spinner />;
-  }
-
-  if (!cargando && fofocas) {
-    return (
-      <div className='m-2'>
-        <div className='text-center m-4'>
-          <h2 className='m-4'>Amigo, estas son las ultimas fofocas para ti</h2>
-          <div className='m-2 card-columns'>{mostrarFofocas(fofocas)}</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className='m-3'>
-      <div className='text-center m-2'>
-        <h1>Hola Amigo</h1>
-        <h4 className='text-muted'>
-          Haz click en el boton para cargar las ultimas fofocas!
-        </h4>
-        <button className='btn btn-primary m-4' onClick={fetchFofocas}>
-          CARGAR FOFOCAS 📢
-        </button>
+    <div className='p-1'>
+      <div className='text-center'>
+        {mensaje ? (
+          <div>
+            <div className='spinner-border text-dark' role='status'>
+              <span className='sr-only'>Loading...</span>
+            </div>
+            <h2 className='m-4 d-inline'>{mensaje}</h2>
+          </div>
+        ) : (
+          <h2 className='m-4'>Te liga nas ultimas fofoca!</h2>
+        )}
+        <div className='card-columns'>{fofocas && mostrarFofocas(fofocas)}</div>
       </div>
     </div>
   );

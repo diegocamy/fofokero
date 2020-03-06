@@ -1,21 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Navbar from './components/Navbar';
 import Fofokas from './components/Fofokas';
 
 import './App.css';
+import Footer from './components/Footer';
 
 function App() {
-  const [opciones, setOpciones] = useState({});
-  const [ultimasFofocas, setUltimasFofocas] = useState(null);
-
-  useEffect(() => {}, []);
-
   return (
     <div className='App'>
       <Navbar />
       <div className='container'>
         <Fofokas />
       </div>
+      <Footer />
     </div>
   );
 }

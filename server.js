@@ -17,8 +17,8 @@ app.use(cors({ origin: 'http://localhost:3000' }));
 //RUTA PARA OBTENER LAS FOFOCAS
 app.get('/fofocas', async (req, res, next) => {
   try {
-    const perfiles = req.query.perfiles.split(',');
-    const fofocas = await scraper(perfiles);
+    const perfiles = process.env.PERFILES;
+    const fofocas = await scraper(perfiles.split(','));
     return res.status(200).json(fofocas);
   } catch (error) {
     next(error);
