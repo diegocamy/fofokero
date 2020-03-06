@@ -16,6 +16,11 @@ app.use(
 app.use(express.json());
 app.use(cors({ origin: 'http://localhost' }));
 
+//serve index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+});
+
 //RUTA PARA OBTENER LAS FOFOCAS
 app.get('/fofocas', async (req, res, next) => {
   try {
@@ -25,11 +30,6 @@ app.get('/fofocas', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
-
-//serve index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
 });
 
 //ERROR HANDLING
