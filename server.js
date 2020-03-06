@@ -8,10 +8,8 @@ const scraper = require('./utils/scrape');
 
 const app = express();
 
-const publicPath = path.join(__dirname, 'client', 'public');
-
 //MIDDLEWARES
-app.use(express.static(publicPath));
+app.use(express.static('client/build'));
 app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms')
 );
@@ -20,7 +18,7 @@ app.use(cors({ origin: 'http://localhost' }));
 
 //serve index.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(publicPath, 'index.html'));
+  res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
 });
 
 //RUTA PARA OBTENER LAS FOFOCAS
