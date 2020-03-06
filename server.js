@@ -12,7 +12,7 @@ app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms')
 );
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: 'http://localhost' }));
 
 //RUTA PARA OBTENER LAS FOFOCAS
 app.get('/fofocas', async (req, res, next) => {

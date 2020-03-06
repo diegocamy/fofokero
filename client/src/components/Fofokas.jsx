@@ -41,7 +41,7 @@ const Fofokas = () => {
   const fetchFofocas = async e => {
     try {
       setMensaje('Cargando nuevas fofocas...');
-      const respuesta = await axios.get('http://localhost:5000/fofocas');
+      const respuesta = await axios.get('/fofocas');
       setFofocas(respuesta.data);
       setMensaje(null);
     } catch (error) {
