@@ -70,7 +70,7 @@ const Fofokas = () => {
     <div className='p-1'>
       <div className='text-center'>
         {mensaje ? (
-          <div>
+          <div className='p-3'>
             <div className='spinner-border text-dark' role='status'>
               <span className='sr-only'>Loading...</span>
             </div>
