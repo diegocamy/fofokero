@@ -148,7 +148,7 @@ async function runScrape(perfiles) {
 
     return noticias;
   } catch (error) {
-    return [];
+    return error;
   }
 }
 
