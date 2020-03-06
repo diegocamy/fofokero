@@ -38,7 +38,7 @@ const Fofokas = () => {
     await fetchFofocas();
   }, 300000);
 
-  const fetchFofocas = async e => {
+  const fetchFofocas = async () => {
     try {
       setMensaje('Cargando nuevas fofocas...');
       const respuesta = await axios.get('/fofocas');
