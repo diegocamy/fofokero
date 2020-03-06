@@ -51,13 +51,14 @@ const Fofokas = () => {
 
   const mostrarFofocas = fofocas => {
     //guardar en localStore las fofocas
-    fofocas.sort(() => Math.random() - 0.5); //pseudo-random sort en las fofocas
+    const fofo = [...fofocas];
+    fofo.sort(() => Math.random() - 0.5); //pseudo-random sort en las fofocas;
     let ultimasFofocas = {};
     ultimasFofocas.hora = new Date().getTime();
-    ultimasFofocas.fofocas = fofocas;
+    ultimasFofocas.fofocas = fofo;
     localStorage.setItem('ultimasFofocas', JSON.stringify(ultimasFofocas));
 
-    return fofocas.map((f, index) => {
+    return fofo.map((f, index) => {
       if (f.titulo && f.imagen) {
         return <FofoCard key={index} fofoca={f} />;
       } else {
