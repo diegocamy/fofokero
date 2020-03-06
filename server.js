@@ -1,18 +1,27 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const path = require('path');
 require('dotenv').config();
 
 const scraper = require('./utils/scrape');
 
 const app = express();
 
+const publicPath = path.join(__dirname, 'client', 'public');
+
 //MIDDLEWARES
+app.use(express.static(publicPath));
 app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms')
 );
 app.use(express.json());
 app.use(cors({ origin: 'http://localhost' }));
+
+//serve index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
+});
 
 //RUTA PARA OBTENER LAS FOFOCAS
 app.get('/fofocas', async (req, res, next) => {
