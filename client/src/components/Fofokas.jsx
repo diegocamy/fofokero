@@ -51,7 +51,9 @@ const Fofokas = () => {
 
   const mostrarFofocas = fofocas => {
     //guardar en localStore las fofocas
+    console.log(fofocas);
     const fofo = [...fofocas];
+    console.log(fofo);
     fofo.sort(() => Math.random() - 0.5); //pseudo-random sort en las fofocas;
     let ultimasFofocas = {};
     ultimasFofocas.hora = new Date().getTime();
