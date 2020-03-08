@@ -7,33 +7,13 @@ import './Fofokas.css';
 const Fofokas = () => {
   const [fofocas, setFofocas] = useState(null);
   const [mensaje, setMensaje] = useState(null);
+  const [actualizadoHace, setActualizadoHace] = useState(null);
 
   useEffect(() => {
-    //obtener ultimas noticias guardadas
-    const fofocasGuardadas = JSON.parse(localStorage.getItem('ultimasFofocas'));
-    if (fofocasGuardadas) {
-      //verificar si pasaron menos de 5 minutos desde el ultimo ingreso a la app
-      //si es asi, mostrar esas mismas noticias sin
-      //volver a cargar otras
-      const horaActual = new Date().getTime();
-      if (horaActual - fofocasGuardadas.hora < 300000) {
-        setFofocas(fofocasGuardadas.fofocas);
-      } else {
-        //si pasaron 5 minutos entonces cargar nuevas fofocas
-        (async () => {
-          setFofocas(fofocasGuardadas.fofocas);
-          await fetchFofocas();
-        })();
-      }
-    } else {
-      //si no habian fofocas guardadas, cargar inmediatamente unas fofoquita
-      (async () => {
-        await fetchFofocas();
-      })();
-    }
+    fetchFofocas();
   }, []);
 
-  //cargar nuevas fofocas a cada 5 min
+  //cargar nuevas fofocas a cada min
   setInterval(async () => {
     await fetchFofocas();
   }, 300000);
@@ -42,7 +22,8 @@ const Fofokas = () => {
     try {
       setMensaje('Cargando nuevas fofocas...');
       const respuesta = await axios.get('/fofocas');
-      setFofocas(respuesta.data);
+      setFofocas(respuesta.data.fofocas);
+      setActualizadoHace(respuesta.data.hora);
       setMensaje(null);
     } catch (error) {
       console.log(error);
@@ -50,12 +31,7 @@ const Fofokas = () => {
   };
 
   const mostrarFofocas = fofocas => {
-    //guardar en localStore las fofocas
-    // fofocas.sort(() => Math.random() - 0.5); //pseudo-random sort en las fofocas
-    let ultimasFofocas = {};
-    ultimasFofocas.hora = new Date().getTime();
-    ultimasFofocas.fofocas = fofocas;
-    localStorage.setItem('ultimasFofocas', JSON.stringify(ultimasFofocas));
+    fofocas.sort(() => Math.random() - 0.5); //pseudo-random sort en las fofocas
 
     return fofocas.map((f, index) => {
       if (f.titulo && f.imagen) {
@@ -77,7 +53,13 @@ const Fofokas = () => {
             <h2 className='m-4 d-inline'>{mensaje}</h2>
           </div>
         ) : (
-          <h2 className='m-4'>Te liga nas ultimas fofoca!</h2>
+          <>
+            <h2 className='m-2'>Te liga nas ultimas fofoca!</h2>
+            <p className='mb-4'>
+              Actualizadas el {new Date(actualizadoHace).toLocaleDateString()} a
+              las {new Date(actualizadoHace).toLocaleTimeString()}
+            </p>
+          </>
         )}
         <div className='card-columns'>{fofocas && mostrarFofocas(fofocas)}</div>
       </div>
