@@ -1,6 +1,6 @@
 # [FOFOKERO](https://fofokero.herokuapp.com)
 
-##TODAS LAS FOFOCAS* DE RIVERA EN UN SOLO LUGAR! *Chismes/Noticias
+## TODAS LAS FOFOCAS* DE RIVERA EN UN SOLO LUGAR! *Chismes/Noticias
 
 ### `Qué es?`
 
