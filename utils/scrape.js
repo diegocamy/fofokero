@@ -4,7 +4,7 @@ const puppeteer = require('puppeteer');
 async function obtenerInfo(url, page) {
   await page.goto(url, {
     waitUntil: 'networkidle2',
-    timeout: 3000000
+    timeout: 3000000,
   });
 
   //hace scroll en la pagina para cargar mas posts en el feed
@@ -39,10 +39,8 @@ async function obtenerInfo(url, page) {
   const data = await page.evaluate(() => {
     //selecciona todos los posts y los pone en un array
     const noticias = Array.from(
-      document.querySelectorAll('div._1dwg._1w_m._q7o')
+      document.querySelectorAll('div._1dwg._1w_m._q7o'),
     );
-
-    console.log(noticias);
 
     const datos = [];
 
@@ -54,9 +52,7 @@ async function obtenerInfo(url, page) {
       let timestamp = noticia.querySelector('.timestampContent');
       timestamp ? (timestamp = timestamp.textContent) : null;
 
-      let titulo = noticia.querySelector(
-        'div:nth-child(2) > div._5pbx.userContent._3576'
-      );
+      let titulo = noticia.querySelector('div._5pbx.userContent._3576');
       titulo
         ? (titulo = titulo.innerText
             .replace('Ver traducción', '')
@@ -64,7 +60,7 @@ async function obtenerInfo(url, page) {
             .trim())
         : null;
 
-      let imagen = noticia.querySelector('div:nth-child(2) > div._3x-2 img');
+      let imagen = noticia.querySelector('div._3x-2 img');
       imagen ? (imagen = imagen.getAttribute('src')) : null;
 
       let enlace = noticia.querySelectorAll('a')[
@@ -85,7 +81,7 @@ async function obtenerInfo(url, page) {
         ? (titular = noticia
             .querySelectorAll('a')
             [noticia.querySelectorAll('a').length - 1].getAttribute(
-              'aria-label'
+              'aria-label',
             ))
         : null;
 
@@ -107,7 +103,7 @@ async function obtenerInfo(url, page) {
       ...e,
       fuente: nombreUsuario,
       linkPerfil: url,
-      fotoUsuario: fotoPerfil
+      fotoUsuario: fotoPerfil,
     };
     return obj;
   });
@@ -118,7 +114,7 @@ async function obtenerInfo(url, page) {
 async function runScrape(perfiles) {
   try {
     const browser = await puppeteer.launch({
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     const page = await browser.newPage();

@@ -15,36 +15,36 @@ const Schema = mongoose.Schema;
 const fofocasSchema = new Schema({
   hora: {
     type: Number,
-    required: true
+    required: true,
   },
   fofocas: [
     {
       timeStamp: {
-        type: String
+        type: String,
       },
       titulo: {
-        type: String
+        type: String,
       },
       imagen: {
-        type: String
+        type: String,
       },
       titular: {
-        type: String
+        type: String,
       },
       enlace: {
-        type: String
+        type: String,
       },
       fuente: {
-        type: String
+        type: String,
       },
       linkPerfil: {
-        type: String
+        type: String,
       },
       fotoUsuario: {
-        type: String
-      }
-    }
-  ]
+        type: String,
+      },
+    },
+  ],
 });
 
 const Fofocas = mongoose.model('fofocas', fofocasSchema);
@@ -53,7 +53,7 @@ mongoose
   .connect(process.env.MONGODB_CONNECTION, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    useFindAndModify: false
+    useFindAndModify: false,
   })
   .then(() => console.log('CONNECTED TO DB'))
   .catch(err => console.log(err));
@@ -63,7 +63,7 @@ mongoose.connection.on('error', err => console.log(err));
 //MIDDLEWARES
 app.use(express.static('client/build'));
 app.use(
-  morgan(':method :url :status :res[content-length] - :response-time ms')
+  morgan(':method :url :status :res[content-length] - :response-time ms'),
 );
 app.use(express.json());
 app.use(cors({ origin: 'http://localhost' }));
@@ -78,30 +78,30 @@ setInterval(async () => {
     //crear objeto fofocas para ingresar a la db
     const fofoca = new Fofocas({
       hora: new Date().getTime(),
-      fofocas: fofocasFetcheadas
+      fofocas: fofocasFetcheadas,
     });
     //verificar si ya existen fofocas en la db
     const fofocasDB = await Fofocas.find();
     //si existen, extraer la hora
     const hora = fofocasDB.length > 0 && fofocasDB[0].hora;
-    //crear el bojeto filtro con la hora para filtrar o vacio si no hay nada en db
+    //crear el objeto filtro con la hora para filtrar o vacio si no hay nada en db
     const filtro = hora ? { hora: hora } : {};
     //actualizar o insertar por primera vez las fofocas en db
     await Fofocas.findOneAndUpdate(
       filtro,
       {
         hora: fofoca.hora,
-        fofocas: fofoca.fofocas
+        fofocas: fofoca.fofocas,
       },
       {
         new: true,
-        upsert: true
-      }
+        upsert: true,
+      },
     );
   } catch (error) {
     console.log(error);
   }
-}, 900000);
+}, 300000);
 
 //RUTA PARA OBTENER LAS FOFOCAS
 app.get('/fofocas', async (req, res, next) => {
